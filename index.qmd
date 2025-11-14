@@ -1,0 +1,183 @@
+# Calculating Molar Masses Programmatically: A Quarto Solution"
+
+## Introduction
+
+This project is designed to demonstrate the process of creating a scientific computation tool using Python and publishing it through a Quarto webpage hosted on GitHub Pages. The focus is on calculating the molar mass of chemical compounds programmatically. By combining chemistry, computer science, and mathematics, this project bridges multiple scientific disciplines while showcasing the potential of computational tools in education and research.
+
+The molar mass calculator takes a chemical formula (such as H2O, C6H12O6, or Fe2(SO4)3) and calculates the total molecular weight based on the known atomic masses of each element. It utilizes a parser that interprets chemical formulas, manages parentheses for grouped atoms, and accurately applies subscripts to indicate multiple atom counts. This project also incorporates symbolic representation using SymPy, tabular data analysis with Pandas, and graphical visualization through Matplotlib. To introduce how the code and these features work together, this document explains their roles, scientific importance, and applicability across various disciplines, including education. It also covers challenges encountered, provides a component breakdown, and concludes with a summary.
+
+## What the Project Is and Its Purpose
+The goal of this project is to develop a Python-based tool that automates the calculation of molecular weights. In chemistry, calculating molar mass is one of the most fundamental operations, yet it is so important for a majority of calculations when working with topics in molecular stoichiometry and dimensional analysis. Traditionally, this is done manually by summing atomic weights multiplied by their respective counts in the formula. However, for complex compounds or repetitive tasks, manual calculations can be error-prone, time-consuming, and redundant for chemists and those alike. 
+
+By developing a program that automatically parses a chemical formula, identifies the elements, counts their occurrences, and calculates their contributions, we eliminate human error and significantly enhance the process's efficiency. The output of the code provides both numeric and visual insights into how different atoms contribute to the total molecular mass.
+
+Furthermore, by embedding this project into a Quarto webpage, the results become reproducible, interactive, and shareable. Quarto enables researchers and students to integrate code, results, text, and equations into a single, cohesive document — much like Jupyter notebooks, but with professional publishing capabilities. Building on these capabilities, the following sections outline the code's structure and how each part contributes to the overall workflow.
+## How It Works: Code Overview for Each Section
+
+The code for this project can be broken down into several main components:
+
+1. **YAML Header**
+2. **Import Chunk**
+3. **Atomic Mass Table**
+4. **Formula Parsing Function**
+5. **Molar Mass Calculation Function**
+6. **Caffeine Example**
+7. **Symbolic Representation (SymPy)**
+8. **Data Presentation with Pandas**
+9. **Visualization (Matplotlib)**
+
+Each of these plays a critical role in making the code functional and efficient. The upcoming sections discuss each part in sequence, clarifying its individual contributions.
+
+#### YAML Header
+Here is the YAML header for the Quarto Document. It tells Quarto how to process and render the document.
+
+---
+title: "Calculating Molar Masses"
+format: html
+execute:
+  echo: true
+  output: true
+---
+
+#### 2. Import Chunk
+This part loads all the Python libraries used in the project. Although this section does not perform calculations itself, it ensures that all external tools required for the following steps, such as numerical operations, data analysis, symbolic computation, and plotting, are available. For example, NumPy is used for numerical operations, Pandas for data manipulation, Matplotlib for creating charts, and SymPy for symbolic math.
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+import sympy
+from sympy import sympify
+
+```
+#### 3. Atomic Mass Table
+The first step in the calculation is to create a dictionary called atomic_masses. This dictionary assigns a known atomic mass value (in grams per mole) to each chemical element abbreviation. When the program parses a chemical formula, it will refer to this dictionary to search for each element’s atomic mass for the calculation.
+
+```{python}
+massnumbers = {"C": 12.011,"O": 15.999,"H": 1.008,"N": 14.007,"F": 18.998,"He": 4.003,"Li": 6.941,"Be": 9.012,"B": 10.811,"Ne": 20.180,"Na": 22.990,"Mg": 24.305,"Al": 26.982,"P": 30.974,"S": 32.065,"Cl": 35.453,"Ar": 39.948}
+```
+#### 4. Formula Parsing Function (find_elements)
+The find_elements function is essential because it interprets the chemical formula string, recognizing and separating each chemical element and its quantity. It is coded to detect both one-letter and two-letter element symbols (for example, H for hydrogen or He for helium), read numeric subscripts indicating the quantity of each atom, and collect information about multi-digit numbers when an element appears multiple times. For instance, given C8H10N4O2, it would extract ('C', 8), ('H', 10), ('N', 4), and ('O, 2).
+
+It works by letting the variable ‘i track the current character in the formula string. The function checks if the next character is a lowercase letter, indicating a two-letter element. If so, it groups those letters to record the correct element. Then, it gathers any following digits to capture the quantity of each element.
+After extracting element symbols and counts, the function compiles this information into a list of (element, count) pairs and returns it. This makes the structure easy for later calculations.
+
+This parser ensures any correctly formatted chemical formula is processed accurately, regardless of whether it contains single- or double-letter element symbols, or multi-digit subscripts for atom counts.
+```{python}
+def find_elements(compound):
+    elements = []
+    i = 0
+
+    while i < len(compound):
+
+        if i + 1 < len(compound) and compound[i+1].islower():
+            element = compound[i:i+2]
+            i += 2
+        else:
+            element = compound[i]
+            i += 1
+
+        num_str = ""
+        while i < len(compound) and compound[i].isdigit():
+            num_str += compound[i]
+            i += 1
+
+        count = int(num_str) if num_str else 1
+
+        elements.append((element, count))
+
+    return elements
+```
+#### 5. Molar Mass Calculation Function (molar_mass)
+The molar mass function takes the parsed list of elements and then calculates the total molecular mass.
+The code then processes each (element, count) pair returned by find_elements. For each, it looks up the element's atomic mass from the atomic_masses dictionary. It multiplies the atomic mass by the number of atoms to find the element’s total mass contribution, adding it to the total molecular mass. To assist with later data presentation, it also stores details for each element in a list called individual_masses.
+
+```{python}
+def molar_mass(formula):
+    elements = find_elements(formula)
+    total_mass = 0
+    for element, count in elements:
+        total_mass += massnumbers[element] * count
+        individual_masses.append([element,count,massnumbers[element],massnumbers[element]*count])
+    return total_mass
+```
+#### 6. Caffeine Example
+Here in the code, Caffeine (C8H10N4O2) is utilized to demonstrate how a formula can be calculated when given. First, it is defined and searched in the dictionary, as it is set to be run through the calculation function. Finally, the calculation is printed when it is run through Python.
+
+```{python}
+individual_masses = []
+
+Caffeine = "C8H10N4O2"
+total = molar_mass(Caffeine)
+print(f"Total molecular mass: {total:.3f}\n")
+```
+#### 7. Sympy Representation 
+SymPy is used to represent molar mass algebraically.
+This part uses symbolic variables to represent the chemical formula within SymPy. The sympify function converts the formula string into a symbolic expression. The Eq function then builds a symbolic equation representing the molar mass, which can be rendered as a LaTeX equation for clear presentation.
+This is useful for teaching and documentation, as it allows users to connect numeric results with symbolic chemical expressions.
+
+```{python}
+u = sympy.symbols("u")
+n = sympy.symbols("n")
+f = sympify(u*n)
+sympy.latex(f)
+caffine = sympy.Eq(sympy.Symbol('f'), u*n)
+```
+#### 8. Data Representation with pandas
+After the calculation, the program utilizes Pandas to create a table that displays the contribution of each element to the composition of the tested molecule.
+The list individual_masses, which contains details for each element, is converted into a pandas DataFrame. This step creates a structured table that shows the element, its count, atomic mass, and contribution to the molecular mass.
+The DataFrame will render as an HTML table and automatically in Quarto, making it ideal for educational or research documentation due to its ease of visually representing the components of a molecule.
+
+```{python}
+df = pd.DataFrame(individual_masses, columns=["Element", "Count", "Atomic Mass", "Total Mass"])
+df
+```
+#### 9. Visualization (Matplotlib)
+This code block generates a pie chart that visually represents, proportionally, each element’s contribution to the compound’s overall mass. It uses the Total Mass column from the DataFrame for the chart's segments, while the labels correspond to element symbols, making it clear which part of the pie represents which element. The chart is then shown within the Quarto webpage output.
+Similar to the table above, this is another way to visualize how different elements combine to form a molecule. This chart is more intuitive than a table full of numbers, so I personally prefer it in an educational setting.
+    
+```{python}
+plt.pie(df["Total Mass"], labels=df["Element"])
+plt.title("Element Mass Contribution in Caffeine")
+plt.savefig("pie.png")
+plt.show()
+
+```
+
+## Visualizing Molecular Composition
+There are two tools utilized in this project that can help visualize how a molecule is composed: what elements make it up, and how much of each element is part of the whole molecule. The first is the Pandas data representation, where the elements, their counts, atomic masses, and total masses are displayed in separate columns. This is a great way to see exactly how much of an element is in one mole of a compound. The total masses can then be added together to get a final mass of a mole of the compound, which should match the calculations made by Python. The second visualization technique is a pie chart utilizing Matplotlib. This pie chart does not display the same numbers as those given in the Pandas representation, but it provides a highly intuitive and easy-to-understand graphic. The pie chart was used in my project because of its ability to show parts of a whole; however, other graphs or charts would also suffice in representing elements in a molecule.
+
+## Educational and Scientific Applications
+This project has multiple educational and scientific benefits:
+
+#### 1. Chemistry Education
+In classrooms, students struggle with chemical formulas and molar mass calculations. By automating this process, educators can demonstrate the logic behind each calculation step. Students can input their own compounds and immediately see numeric, tabular, and graphical representations to help them visualize what is going on. Not only does this help students learn, but it can also make them work more efficiently by saving time, as it provides a solution for tedious calculations that would otherwise require manual effort. These calculations, though simple, can take extra time that is vital in a laboratory or lecture-type environment.
+
+#### 2. Computational Thinking
+This project also encourages interdisciplinary learning. It teaches programming concepts in a scientific context, allowing these concepts to be visualized in an easy-to-understand STEM-related discipline. For me, this project itself helped me understand what I was doing when writing the code and how I would achieve my desired outcome.
+
+#### 3. Scientific Research
+Researchers and lab technicians frequently calculate molar masses while preparing chemical solutions. Automating this process ensures accuracy, consistency, and efficiency, particularly when dealing with large datasets or repetitive calculations. As a biology major currently enrolled in chemistry courses, I understand the significance of atomic mass and have applied it numerous times throughout my coursework. Atomic mass is a key component in quantitative analysis, enabling the determination of the amount of a substance used or needed in an experiment. It also helps to identify unknown compounds using concepts like spectrometry. In nuclear chemistry, Atomic mass is extremely crucial as it is the key to understanding radioactive decay and nuclear reactions. This is how scientists can date organic materials. It also plays a role in calculating the energy changes in chemical reactions using thermochemistry. 
+
+#### 4. Reproducibility
+By using Quarto and GitHub Pages, results are fully reproducible. This means that this exact code can be utilized by those in need of a quick solution to complete these calculations. This GitHub repository is public, allowing anyone with access to the link to complete these calculations using the project.
+
+## Struggles and Challenges Faced
+This project was extremely challenging for me, as it was very complex and intricate, despite the main goal being relatively simple. I struggled with developing several challenges, which were addressed throughout the process. Here I listed some of the main challenges I encountered:
+1. Parsing multi-digit atom counts and multi-letter elements was very confusing for me. My original code failed with formulas like C12H22O11 or NaCl because I had only designed the code to recognise elements with one letter or their count being on. I fixed this issue by adding a loop (i) to check each letter and digit to see if there was more than just one.
+3. Another problem I ironed out was displaying tables and graphs in Quarto vs my GitHub repository. needed to return the DataFrame (df) instead of using print().Required plt.show() to ensure the pie chart renders correctly on my Quarto document. Then I needed to format them differently so that they would display correctly in my GitHub repository. 
+4. I also struggled with the symbolic representation portion. Using SymPy was challenging, and it required precise settings to produce valid LaTeX in Quarto.
+5. My final considerable struggle was my GitHub pages rendering. I finally understood that Quarto must render .qmd to HTML before pushing, which was a tedious task to perform repeatedly while editing the code.
+
+## Summary
+This project demonstrates how to calculate and visualize the molar mass of chemical compounds programmatically using Python, pandas, matplotlib, and SymPy within a Quarto document. By combining these tools, the project not only automates tedious calculations but also provides insights that are visually and mathematically meaningful, making it a versatile tool for students, educators, and researchers alike. It parses chemical formulas, counts atoms, calculates the total molecular mass, displays the results in a table, and creates a pie chart showing the contribution of each element. Then it creates a symbolic representation with SymPy and links numeric calculations to chemical formulas. Finally, by publishing on GitHub Pages, the workflow becomes reproducible and shareable, making it a practical tool for education, research, and demonstrating the integration of computation into chemistry.
+
+
+## Possible Project Extension
+
+Although this project is extremely helpful in calculating molar mass for a molecule, there is more that can be done to make this tool even more effective. In chemistry, there are groups of ions (charged particles) called polyatomic ions. Polyatomic ions are compounds that behave as a single element even though they have multiple elements that make them up. Hydroxide (OH^-) is a perfect example. Although there is one oxygen and one hydrogen, this ion has a negative charge and behaves like a single element. This would be a problem for my current code because when it encounters a compound like Calcium Hydroxide, or Ca(OH)2, it would not recognize that, in this instance, OH is considered a single element. Further changes to the formula parsing function can be made to allow the polyatomic ions and their parentheses to be recognized and factored in when a compound containing one is encountered.
+
+Another addition to the project could be tweaking the code to handle multiple batches of compounds simultaneously, and potentially even combine them. In a laboratory setting, numerous chemicals are used, and all of them are typically extremely large compounds. To make researchers even more efficient, we can enable them to perform numerous calculations of varying sizes all at once.
+
+
