@@ -33,10 +33,13 @@ Here is the YAML header for the Quarto Document. It tells Quarto how to process 
 
 ---
 title: "Calculating Molar Masses"
-format: html
+format:
+   html:
+      theme: yeti
 execute:
   echo: true
   output: true
+embed-resources: true
 ---
 
 #### 2. Import Chunk
